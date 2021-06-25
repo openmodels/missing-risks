@@ -1,6 +1,7 @@
 library(readxl)
+library(Matrix)
 
-df <- read_excel("combined/Missing risks evidence.xlsx", sheet=1, skip=1)
+df <- read_excel("data/Missing risks evidence.xlsx", sheet=1, skip=1)
 df2 <- subset(df, is.na(Include) | Include == 'Yes')
 
 df3 <- rbind(cbind(df2[, c(1:2, 5:16, 28)], Warming=2, Central=df2$`Millions at risk...17`,
@@ -39,3 +40,18 @@ for (row in unique(df3$row[df3$postproc == 'Imputed'])) {
 }
 
 df <- df3
+
+get.mat.corr <- function() {
+    mat.corr <- as.matrix(read_excel("data/Missing risks evidence.xlsx", sheet=2)[, -1])
+    mat.corr[lower.tri(mat.corr)] <- t(mat.corr)[lower.tri(mat.corr)]
+
+    nearPD(mat.corr, corr=T)$mat
+}
+
+get.mat.remain <- function() {
+    mat.remain <- 1 - as.matrix(read_excel("data/Missing risks evidence.xlsx", sheet=3)[, -1])
+    mat.remain[lower.tri(mat.remain)] <- t(mat.remain)[lower.tri(mat.remain)]
+
+    mat.remain
+}
+

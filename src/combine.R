@@ -1,9 +1,16 @@
+library(copula)
+
 tworisk.double.count <- function(pp1, pp2) {
     pp1 + pp2 - pp1 * pp2
 }
 
+get.udraws <- function(mat.corr, numdraws) {
+    copula <- normalCopula(P2p(mat.corr), dim=dim(mat.corr)[1], dispstr='un')
+    rCopula(numdraws, copula)
+}
+
 ## risks = list(risk=list(function -> 4000 draws))
-combine.risks <- function(risks, numdraws) {
+combine.risks <- function(risks, numdraws, udraws) {
     finres <- data.frame()
     for (warming in 2:4) {
         impacts <- matrix(NA, numdraws, 0)

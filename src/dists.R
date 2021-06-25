@@ -17,10 +17,21 @@ fit.beta <- function(mu, qq, aa) {
 sres <- data.frame(year=rep(c(2025, 2050, 2085), each=4), scenario=rep(c('A1', 'B1', 'A2', 'B2'), 3),
                    pop=c(7926, 7926, 8714, 8036, 8709, 8709, 11778, 9541, 7914, 7914, 14220, 10235))
 
+history <- data.frame(year=c(1990, 2000, 2010), pop=c(5.28e3, 6.114e3, 6.922e3))
+
+pops <- read.csv("data/ssps/total_population.csv")
+pops <- subset(pops, MODEL == 'IIASA-WiC POP' & SCENARIO == 'SSP2_v9_130115') # most entries and 1 scen.
+
+ssppop <- data.frame(year=2010, pop=sum(pops$X2010) * 1e6)
+
 get.population <- function(scenario, year) {
     if (is.na(year))
         year <- 2020
-    if (scenario %in% sres$scenario)
+    if (scenario == 'History')
+        return(history$pop[abs(history$year - year) == min(abs(history$year - year))])
+    else if (scenario == 'SSP')
+        return(history$ssppop[abs(history$year - year) == min(abs(history$year - year))])
+    else if (scenario %in% sres$scenario)
         return(sres$pop[sres$scenario == scenario & abs(sres$year - year) == min(abs(sres$year - year))])
     else
         get.population('A2', year)

@@ -1,25 +1,20 @@
-setwd("~/research/missrisks")
+## setwd("~/research/missrisks")
 
-source("combined/dists.R")
-library(copula)
-library(Matrix)
+source("src/dists.R")
 library(ggplot2)
 library(dplyr)
 
-source("combined/prepare.R")
-source("combined/combine.R")
+source("src/prepare.R")
+source("src/combine.R")
 
 ## Combine across regions with each reference
 df2 <- df %>% group_by(Risk, Warming, `Full Reference`, Scenario, `Pop. Year`) %>% summarize(Central=sum(Central), Upper=sum(Upper), Quantile=mean(Quantile))
 
-mat.corr <- as.matrix(read_excel("combined/Missing risks evidence.xlsx", sheet=2)[, -1])
+mat.corr <- as.matrix(read_excel("data/Missing risks evidence.xlsx", sheet=2)[, -1])
 mat.corr[lower.tri(mat.corr)] <- t(mat.corr)[lower.tri(mat.corr)]
-
 mat.corr2 <- nearPD(mat.corr, corr=T)$mat
-copula <- normalCopula(P2p(mat.corr2), dim=dim(mat.corr)[1], dispstr='un')
-udraws <- rCopula(4000, copula)
 
-mat.remain <- 1 - as.matrix(read_excel("combined/Missing risks evidence.xlsx", sheet=3)[, -1])
+mat.remain <- 1 - as.matrix(read_excel("data/Missing risks evidence.xlsx", sheet=3)[, -1])
 mat.remain[lower.tri(mat.remain)] <- t(mat.remain)[lower.tri(mat.remain)]
 
 risks <- list()
@@ -58,7 +53,8 @@ for (risk in unique(df2$Risk)) {
     risks[[risk]] <- gens
 }
 
-finres <- combine.risks(risks, 4000)
+udraws <- get.udraws(mat.corr, 4000)
+finres <- combine.risks(risks, 4000, udraws)
 
 
 
